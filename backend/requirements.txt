@@ -2,3 +2,10 @@ SQLAlchemy>=2,<3
 GeoAlchemy2>=0.15,<1
 psycopg[binary]>=3,<4
 alembic>=1.13,<2
+
+fastapi
+uvicorn[standard]
+httpx
+pydantic
+pydantic-settings
+python-dotenv

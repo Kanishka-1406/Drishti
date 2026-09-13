@@ -64,6 +64,7 @@ class SensorReading(Base):
     tilt_y: Mapped[float | None] = mapped_column(Float)
     tilt_magnitude: Mapped[float | None] = mapped_column(Float)
     battery: Mapped[float | None] = mapped_column(Float)
+    source_mode: Mapped[str] = mapped_column(Text, default="LIVE", server_default="LIVE")
     received_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

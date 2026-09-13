@@ -45,3 +45,13 @@ data/raw/*
 # Temporary files
 *.tmp
 *.temp
+
+backend/.env
+
+.env
+
+__pycache__/
+
+.pytest_cache/
+
+*.pyc
