@@ -2,7 +2,11 @@ from pydantic import BaseModel, Field
 
 
 class ScenarioRequest(BaseModel):
-    region_id: int = Field(gt=0)
+    # The scenario engine is stateless and does not query the regions table.
+    # Negative IDs are reserved by the frontend for explicitly labelled demo regions.
+    region_id: int = Field(
+        description="Region identifier echoed for traceability; no database lookup is performed."
+    )
 
     rainfall_mm: float = Field(
         ge=0,
