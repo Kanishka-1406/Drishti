@@ -1,31 +1,39 @@
-<<<<<<< HEAD
-# Drishti
+# DRISHTI — See the Risk. Act Before.
 
-Explainable landslide risk decision-support and scenario-exploration system.
+## Run now without Docker
 
-> "See the Risk. Act Before."
+PostgreSQL is already installed and running on this computer. Open PowerShell in this folder and run:
 
-Drishti is a decision-support tool, not a landslide prediction system.
+```powershell
+.\scripts\run_dev.ps1
+```
 
-## Status
+Two terminal windows will open. Keep both open, then visit:
+- Frontend: http://127.0.0.1:5173
+- API: http://127.0.0.1:8000
+- Swagger: http://127.0.0.1:8000/docs
 
-Implementation follows the phased build order defined in the Drishti Master Software Blueprint.
+The backend virtual environment and dependencies have already been installed in `backend/.venv`.
 
-Current phase: Phase 1 � Repository Structure.
-=======
-# Drishti — See the Risk. Act Before.
-Explainable disaster-risk intelligence and scenario simulation prototype.
+## Sensor demo
 
-## Run
-npm install
-npm run dev
+In another PowerShell window:
 
-## Build
-npm run build
+```powershell
+cd backend
+.\.venv\Scripts\python.exe scripts\simulate_sensor.py
+```
+
+## Optional Docker route
+
+After installing Docker Desktop with WSL 2 support:
+
+```powershell
+docker compose up --build
+```
+
+Docker URLs are frontend http://localhost:8080, API http://localhost:8000, and Swagger http://localhost:8000/docs.
 
 ## Deploy
-Deploy the project to Vercel as a Vite app. No backend or API keys are required.
 
-## Honesty
-Current regional values are simulation inputs. The scoring engine is deterministic and explainable; it is not a trained ML model and has not been validated for operational prediction. Government sources such as IMD, GSI and data.gov.in are referenced as a future production data ecosystem, not claimed as live integrations.
->>>>>>> origin/main
+Push this directory to GitHub. Create a Render Blueprint using root `render.yaml`. Deploy `frontend/` on Vercel as a Vite project, set `VITE_API_URL` to the Render backend URL, and set backend `CORS_ORIGINS` to the Vercel frontend URL.
