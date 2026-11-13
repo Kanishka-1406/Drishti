@@ -1,4 +1,4 @@
-# DRISHTI — See the Risk. Act Before.
+# DRISHTI â€” See the Risk. Act Before.
 
 **Explainable geospatial landslide-risk intelligence and scenario exploration for disaster preparedness.**
 
@@ -142,7 +142,7 @@ DRISHTI is intended for exploration and human review by disaster-management team
 
 ---
 
-**DRISHTI — See the Risk. Act Before.**
+**DRISHTI â€” See the Risk. Act Before.**
 
 
 ## Regional data ingestion
@@ -166,3 +166,18 @@ python -m app.ingestion.fetch_terrain --all
 The nationwide commands make external requests for every configured region. Terrain ingestion uses up to five point-elevation requests per region and stores a regional reference-point slope estimate; it is not a substitute for a full-resolution DEM-derived slope raster. Soil retention is intentionally left unset until a sourced soil dataset or documented regional baseline is loaded. Regions without complete terrain and soil inputs should remain unavailable for risk assessment rather than receiving invented values.
 
 The default (no-argument) behavior remains Darjeeling-only for backward compatibility. Use `--all` deliberately and observe provider rate limits and API-key quotas.
+
+## Project Screenshots
+
+### 1. Drishti Dashboard
+![Drishti Dashboard](docs/images/dashboard.png)
+
+### 2. Scenario Simulator - Risk Map
+![Scenario Risk Map](docs/images/scenario-map.png)
+
+### 3. Scenario Simulator - Simulation Results
+![Simulation Results](docs/images/simulation.png)
+
+### 4. IoT Hardware Prototype
+![IoT Hardware](docs/images/iot-hardware.png)
+
