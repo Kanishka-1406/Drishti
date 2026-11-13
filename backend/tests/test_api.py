@@ -58,3 +58,19 @@ def test_invalid_scenario_rejected():
     )
 
     assert response.status_code == 422
+
+
+def test_demo_region_scenario_accepts_negative_identifier():
+    payload = {
+        "region_id": -1,
+        "rainfall_mm": 120,
+        "slope_deg": 30,
+        "soil_retention_score": 0.4,
+        "historical_count_2km": 2,
+    }
+
+    response = client.post("/scenarios/simulate", json=payload)
+
+    assert response.status_code == 200
+    assert response.json()["region_id"] == -1
+    assert response.json()["scenario"] is True
