@@ -11,14 +11,14 @@ const BASEMAPS={
 const FALLBACK={focus:{center:[82.5,23.4],zoom:4.2,pitch:48,bearing:0},terrain:{dem_tiles:"https://demotiles.maplibre.org/terrain-tiles/tiles.json",exaggeration:1.35},boundary:{title:"Political Map of India",publisher:"Survey of India, Government of India",edition:"13th Edition 2026",reference_url:"https://surveyofindia.gov.in/UserFiles/files/POL_MAP_4M_ENGLISH_13thEdn2026%281%29.pdf"}};
 const LAYERS={terrain:true,risk:true,rain:true,historical:true,sensors:true,infrastructure:true,boundary:true};
 const DEMO_REGIONS=[
- {id:-1,name:"Gangtok",state:"Sikkim",coordinates:[88.6138,27.3389],risk:68,level:"HIGH",data:{rainfall:{rainfall_7d_mm:82},slope_deg:31,historical_count_2km:3},factors:[{name:"rainfall"},{name:"slope"}],demo:true},
- {id:-2,name:"Aizawl",state:"Mizoram",coordinates:[92.7176,23.7271],risk:64,level:"HIGH",data:{rainfall:{rainfall_7d_mm:91},slope_deg:33,historical_count_2km:2},factors:[{name:"rainfall"},{name:"terrain"}],demo:true},
- {id:-3,name:"Joshimath",state:"Uttarakhand",coordinates:[79.5664,30.5554],risk:57,level:"HIGH",data:{rainfall:{rainfall_7d_mm:34},slope_deg:35,historical_count_2km:4},factors:[{name:"slope"},{name:"history"}],demo:true},
- {id:-4,name:"Mandi",state:"Himachal Pradesh",coordinates:[76.9314,31.708],risk:53,level:"HIGH",data:{rainfall:{rainfall_7d_mm:47},slope_deg:28,historical_count_2km:2},factors:[{name:"rainfall"},{name:"slope"}],demo:true},
- {id:-5,name:"Kalimpong",state:"West Bengal",coordinates:[88.4789,27.0594],risk:59,level:"HIGH",data:{rainfall:{rainfall_7d_mm:76},slope_deg:30,historical_count_2km:2},factors:[{name:"rainfall"},{name:"terrain"}],demo:true},
- {id:-6,name:"Idukki",state:"Kerala",coordinates:[77.1025,9.9189],risk:48,level:"MODERATE",data:{rainfall:{rainfall_7d_mm:105},slope_deg:24,historical_count_2km:2},factors:[{name:"rainfall"},{name:"history"}],demo:true},
- {id:-7,name:"Kodagu",state:"Karnataka",coordinates:[75.8069,12.3375],risk:43,level:"MODERATE",data:{rainfall:{rainfall_7d_mm:88},slope_deg:22,historical_count_2km:1},factors:[{name:"rainfall"},{name:"slope"}],demo:true},
- {id:-8,name:"Shillong",state:"Meghalaya",coordinates:[91.8933,25.5788],risk:45,level:"MODERATE",data:{rainfall:{rainfall_7d_mm:96},slope_deg:21,historical_count_2km:1},factors:[{name:"rainfall"},{name:"terrain"}],demo:true},
+ {id:-1,name:"Gangtok",state:"Sikkim",coordinates:[88.6138,27.3389],risk:68,level:"HIGH",data:{rainfall:{rainfall_7d_mm:82},slope_deg:31,soil_retention_score:0.38,historical_count_2km:3},factors:[{name:"rainfall"},{name:"slope"}],demo:true},
+ {id:-2,name:"Aizawl",state:"Mizoram",coordinates:[92.7176,23.7271],risk:64,level:"HIGH",data:{rainfall:{rainfall_7d_mm:91},slope_deg:33,soil_retention_score:0.42,historical_count_2km:2},factors:[{name:"rainfall"},{name:"terrain"}],demo:true},
+ {id:-3,name:"Joshimath",state:"Uttarakhand",coordinates:[79.5664,30.5554],risk:57,level:"HIGH",data:{rainfall:{rainfall_7d_mm:34},slope_deg:35,soil_retention_score:0.48,historical_count_2km:4},factors:[{name:"slope"},{name:"history"}],demo:true},
+ {id:-4,name:"Mandi",state:"Himachal Pradesh",coordinates:[76.9314,31.708],risk:53,level:"HIGH",data:{rainfall:{rainfall_7d_mm:47},slope_deg:28,soil_retention_score:0.50,historical_count_2km:2},factors:[{name:"rainfall"},{name:"slope"}],demo:true},
+ {id:-5,name:"Kalimpong",state:"West Bengal",coordinates:[88.4789,27.0594],risk:59,level:"HIGH",data:{rainfall:{rainfall_7d_mm:76},slope_deg:30,soil_retention_score:0.45,historical_count_2km:2},factors:[{name:"rainfall"},{name:"terrain"}],demo:true},
+ {id:-6,name:"Idukki",state:"Kerala",coordinates:[77.1025,9.9189],risk:48,level:"MODERATE",data:{rainfall:{rainfall_7d_mm:105},slope_deg:24,soil_retention_score:0.44,historical_count_2km:2},factors:[{name:"rainfall"},{name:"history"}],demo:true},
+ {id:-7,name:"Kodagu",state:"Karnataka",coordinates:[75.8069,12.3375],risk:43,level:"MODERATE",data:{rainfall:{rainfall_7d_mm:88},slope_deg:22,soil_retention_score:0.50,historical_count_2km:1},factors:[{name:"rainfall"},{name:"slope"}],demo:true},
+ {id:-8,name:"Shillong",state:"Meghalaya",coordinates:[91.8933,25.5788],risk:45,level:"MODERATE",data:{rainfall:{rainfall_7d_mm:96},slope_deg:21,soil_retention_score:0.47,historical_count_2km:1},factors:[{name:"rainfall"},{name:"terrain"}],demo:true},
 ];
 const color=(level)=>({SEVERE:"#E05263",HIGH:"#F39C4A",MODERATE:"#F2C94C",LOW:"#43C6AC"}[String(level).toUpperCase()]||"#91A4B3");
 const freshness=(seconds)=>seconds==null?"Unavailable":seconds<60?"Updated just now":seconds<3600?`Updated ${Math.floor(seconds/60)} min ago`:seconds<86400?`Updated ${Math.floor(seconds/3600)} h ago`:`Updated ${Math.floor(seconds/86400)} d ago`;
@@ -45,10 +45,13 @@ export default function IndiaExplorer({onContext}){
  const runRainScenario=async()=>{
   if(!selected){setScenarioError("Select a region first.");return}
   const data=selected.data||{};
-  const baseRain=Number(data.rainfall?.rainfall_7d_mm);
-  const slope=Number(data.slope_deg);
-  const soil=Number(data.soil_retention_score);
-  const history=Number(data.historical_count_2km);
+  const rawInputs=[data.rainfall?.rainfall_7d_mm,data.slope_deg,data.soil_retention_score,data.historical_count_2km];
+  if(rawInputs.some(value=>value===null||value===undefined||value==="")) {
+   setScenarioError("This region does not have a complete scenario baseline yet.");
+   setScenarioResult(null);
+   return;
+  }
+  const [baseRain,slope,soil,history]=rawInputs.map(Number);
   if(![baseRain,slope,soil,history].every(Number.isFinite)){
    setScenarioError("This region does not have a complete scenario baseline yet.");
    setScenarioResult(null);
