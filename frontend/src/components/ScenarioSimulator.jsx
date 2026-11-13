@@ -115,6 +115,14 @@ function ScenarioSimulator({ regionId, currentRisk }) {
     }
   }, [regionId, baseline, rainfall, slope, soilRetention, historicalCount]);
 
+  function updateScenarioInput(setter, value) {
+    requestSequence.current += 1;
+    setLoading(false);
+    setScenarioResult(null);
+    setError(null);
+    setter(value);
+  }
+
   function resetScenario() {
     const next = getBaseline(currentRisk);
     requestSequence.current += 1;
@@ -163,10 +171,10 @@ function ScenarioSimulator({ regionId, currentRisk }) {
 
           <div className="scenario-layout">
             <div className="scenario-controls">
-              <SliderField label="7-day rainfall" value={rainfall} min={0} max={400} step={5} unit=" mm" onChange={setRainfall} />
-              <SliderField label="Slope" value={slope} min={0} max={60} step={0.5} unit="°" onChange={setSlope} />
-              <SliderField label="Soil retention" value={soilRetention} min={0} max={1} step={0.05} onChange={setSoilRetention} />
-              <SliderField label="Historical events within 2 km" value={historicalCount} min={0} max={10} step={1} onChange={setHistoricalCount} />
+              <SliderField label="7-day rainfall" value={rainfall} min={0} max={400} step={5} unit=" mm" onChange={(value) => updateScenarioInput(setRainfall, value)} />
+              <SliderField label="Slope" value={slope} min={0} max={60} step={0.5} unit="°" onChange={(value) => updateScenarioInput(setSlope, value)} />
+              <SliderField label="Soil retention" value={soilRetention} min={0} max={1} step={0.05} onChange={(value) => updateScenarioInput(setSoilRetention, value)} />
+              <SliderField label="Historical events within 2 km" value={historicalCount} min={0} max={10} step={1} onChange={(value) => updateScenarioInput(setHistoricalCount, value)} />
 
               <div className="scenario-actions">
                 <button className="primary-button" type="button" onClick={runScenario} disabled={loading || !baseline}>
