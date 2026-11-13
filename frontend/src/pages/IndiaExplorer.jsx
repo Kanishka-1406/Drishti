@@ -46,6 +46,11 @@ export default function IndiaExplorer({onContext}){
  const runRainScenario=async()=>{
   if(!selected){setScenarioError("Select a region first.");return}
   const data=selected.data||{};
+  if(!selected.demo&&!data.rainfall?.fetched_at){
+   setScenarioError("No stored rainfall observation is available for this region. The rainfall-intensification scenario needs a dated baseline; no zero-rainfall assumption is substituted.");
+   setScenarioResult(null);
+   return;
+  }
   const rawInputs=[data.rainfall?.rainfall_7d_mm,data.slope_deg,data.soil_retention_score,data.historical_count_2km];
   if(rawInputs.some(value=>value===null||value===undefined||value==="")) {
    setScenarioError("This region does not have a complete scenario baseline yet.");
