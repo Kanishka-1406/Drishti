@@ -143,3 +143,26 @@ DRISHTI is intended for exploration and human review by disaster-management team
 ---
 
 **DRISHTI — See the Risk. Act Before.**
+
+
+## Regional data ingestion
+
+The ingestion scripts now accept a region slug or an explicit nationwide run. Run them from the backend directory with the backend virtual environment active and the required environment variables configured.
+
+### Rainfall (Open-Meteo)
+
+```powershell
+python -m app.ingestion.fetch_rainfall --region darjeeling
+python -m app.ingestion.fetch_rainfall --all
+```
+
+### Terrain reference points (OpenTopography)
+
+```powershell
+python -m app.ingestion.fetch_terrain --region darjeeling
+python -m app.ingestion.fetch_terrain --all
+```
+
+The nationwide commands make external requests for every configured region. Terrain ingestion uses up to five point-elevation requests per region and stores a regional reference-point slope estimate; it is not a substitute for a full-resolution DEM-derived slope raster. Soil retention is intentionally left unset until a sourced soil dataset or documented regional baseline is loaded. Regions without complete terrain and soil inputs should remain unavailable for risk assessment rather than receiving invented values.
+
+The default (no-argument) behavior remains Darjeeling-only for backward compatibility. Use `--all` deliberately and observe provider rate limits and API-key quotas.
