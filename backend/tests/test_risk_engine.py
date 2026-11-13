@@ -86,3 +86,21 @@ def test_inputs_are_clamped():
 )
 def test_risk_categories(score, expected):
     assert get_risk_category(score) == expected
+
+
+def test_unavailable_rainfall_is_excluded_and_remaining_weights_are_normalized():
+    data = RiskInput(
+        rainfall_7d_mm=0.0,
+        slope_deg=22.5,
+        soil_retention_score=0.5,
+        historical_count_2km=2,
+        rainfall_available=False,
+    )
+
+    result = compute_risk(data)
+    factors = {factor.name: factor for factor in result.factors}
+
+    assert factors["rainfall"].weight == 0
+    assert factors["rainfall"].contribution == 0
+    assert sum(factor.weight for factor in result.factors) == pytest.approx(1.0)
+    assert result.base_score == pytest.approx(37.5)
