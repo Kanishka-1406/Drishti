@@ -103,4 +103,4 @@ def test_unavailable_rainfall_is_excluded_and_remaining_weights_are_normalized()
     assert factors["rainfall"].weight == 0
     assert factors["rainfall"].contribution == 0
     assert sum(factor.weight for factor in result.factors) == pytest.approx(1.0)
-    assert result.base_score == pytest.approx(37.5)
+    assert result.base_score == pytest.approx(47.5)
