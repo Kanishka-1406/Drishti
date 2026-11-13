@@ -75,6 +75,7 @@ def calculate_region_risk(region_id: int):
         soil_retention_score=effective_retention,
         historical_count_2km=history_count,
         sensor_adjustment=sensor_adjustment,
+        rainfall_available=bool(rainfall.get("fetched_at")),
     )
     result = compute_risk(risk_input)
 
