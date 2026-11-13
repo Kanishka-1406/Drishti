@@ -25,7 +25,7 @@ const freshness=(seconds)=>seconds==null?"Unavailable":seconds<60?"Updated just 
 const featureCollection=(features=[])=>({type:"FeatureCollection",features});
 
 export default function IndiaExplorer({onContext}){
- const mapNode=useRef(null),mapRef=useRef(null);
+ const mapNode=useRef(null),mapRef=useRef(null),scenarioRequest=useRef(0);
  const [config,setConfig]=useState(FALLBACK),[regions,setRegions]=useState([]),[hotspots,setHotspots]=useState([]),[apiOnline,setApiOnline]=useState(false);
  const [terrainOn,setTerrainOn]=useState(true),[layers,setLayers]=useState(LAYERS),[selected,setSelected]=useState(null),[search,setSearch]=useState("");
  const [rainScenario,setRainScenario]=useState(35),[scenarioRan,setScenarioRan]=useState(false),[scenarioResult,setScenarioResult]=useState(null),[scenarioLoading,setScenarioLoading]=useState(false),[scenarioError,setScenarioError]=useState(null),[activeBasemap,setActiveBasemap]=useState("terrain");
@@ -41,6 +41,7 @@ export default function IndiaExplorer({onContext}){
  const jumpTo=h=>{setSelected(h);mapRef.current?.flyTo({center:h.coordinates,zoom:8.3,pitch:terrainOn?62:0,speed:.8})};
  const switchBasemap=key=>{const map=mapRef.current,def=BASEMAPS[key];if(!map||!def)return;if(map.getLayer("base"))map.removeLayer("base");if(map.getSource("base"))map.removeSource("base");map.addSource("base",{type:"raster",tiles:[def.url],tileSize:256,attribution:def.attribution});map.addLayer({id:"base",type:"raster",source:"base"},map.getLayer("hotspot-halo")?"hotspot-halo":undefined);setActiveBasemap(key)};
  const toggleTerrain=()=>{const map=mapRef.current,next=!terrainOn;setTerrainOn(next);map?.setTerrain(next?{source:"terrain-dem",exaggeration:config.terrain?.exaggeration||1.35}:null);map?.easeTo({pitch:next?58:0,duration:700})};
+ useEffect(()=>{scenarioRequest.current+=1;setScenarioResult(null);setScenarioRan(false);setScenarioError(null);setScenarioLoading(false)},[selected?.id]);
  const rainfall=selected?.data?.rainfall;
  const runRainScenario=async()=>{
   if(!selected){setScenarioError("Select a region first.");return}
@@ -58,6 +59,7 @@ export default function IndiaExplorer({onContext}){
    return;
   }
   const adjustedRain=Math.min(400,baseRain*(1+rainScenario/100));
+  const requestId=++scenarioRequest.current;
   setScenarioLoading(true);setScenarioError(null);setScenarioRan(false);setScenarioResult(null);
   try{
    const result=await simulateScenario({
@@ -68,11 +70,11 @@ export default function IndiaExplorer({onContext}){
     historical_count_2km:history,
     sensor_adjustment:0
    });
-   setScenarioResult(result);setScenarioRan(true);
+   if(requestId===scenarioRequest.current){setScenarioResult(result);setScenarioRan(true)}
   }catch(error){
    console.error("India Explorer scenario failed:",error);
-   setScenarioError(error.response?.data?.detail||"Scenario API unavailable. Please check the backend.");
-  }finally{setScenarioLoading(false)}
+   if(requestId===scenarioRequest.current)setScenarioError(error.response?.data?.detail||"Scenario API unavailable. Please check the backend.");
+  }finally{if(requestId===scenarioRequest.current)setScenarioLoading(false)}
  };
  useEffect(()=>{onContext?.({region:selected?.name||null,risk:selected?.risk??null,category:selected?.level||null,rainfall,terrain:selected?.data?.slope_deg??null,sensor:selected?.sensor||null,historical_count:context.historical?.features?.length??null,infrastructure:context.infrastructure?.category_counts||null})},[selected,context,onContext]);
  const highCount=hotspots.filter(h=>["HIGH","SEVERE"].includes(String(h.level).toUpperCase())).length,infraCount=context.infrastructure?.count;
