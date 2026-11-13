@@ -27,7 +27,7 @@ The current prototype uses a transparent factor-weight configuration:
 | Soil | 20% |
 | Historical context | 15% |
 
-These are prototype configuration weights, not universally calibrated scientific coefficients. The displayed index is a contextual decision-support indicator, **not a probability of a landslide**.
+These are prototype configuration weights, not universally calibrated scientific coefficients. The displayed index is a contextual decision-support indicator, **not a probability of a landslide**. If rainfall has no stored observation timestamp, its 40% weight is excluded and the remaining available factor weights are normalized to 100%; missing rainfall is never interpreted as 0 mm.
 
 ## Data integrity
 
