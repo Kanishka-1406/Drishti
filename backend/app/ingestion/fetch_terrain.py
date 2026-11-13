@@ -60,9 +60,21 @@ def haversine_distance_m(lat1, lon1, lat2, lon2):
 
 def store_location(region, lat, lon, elevation_m, slope_deg):
     reference_name = f"{region['name']} Reference Point"
-    delete_query = text("""
-        DELETE FROM locations
+    find_query = text("""
+        SELECT id
+        FROM locations
         WHERE region_id = :region_id AND name = :reference_name
+        ORDER BY id DESC
+        LIMIT 1
+        FOR UPDATE
+    """)
+    update_query = text("""
+        UPDATE locations
+        SET
+            geom = ST_SetSRID(ST_MakePoint(:lon, :lat), 4326),
+            slope_deg = :slope_deg,
+            elevation_m = :elevation_m
+        WHERE id = :location_id
     """)
     insert_query = text("""
         INSERT INTO locations (
@@ -78,10 +90,26 @@ def store_location(region, lat, lon, elevation_m, slope_deg):
     """)
 
     with engine.begin() as connection:
-        connection.execute(
-            delete_query,
+        existing = connection.execute(
+            find_query,
             {"region_id": region["id"], "reference_name": reference_name},
-        )
+        ).mappings().first()
+
+        if existing:
+            location_id = existing["id"]
+            connection.execute(
+                update_query,
+                {
+                    "location_id": location_id,
+                    "lat": lat,
+                    "lon": lon,
+                    "slope_deg": slope_deg,
+                    "elevation_m": elevation_m,
+                },
+            )
+            # Preserve any previously sourced soil class/retention baseline.
+            return location_id
+
         return connection.execute(
             insert_query,
             {
