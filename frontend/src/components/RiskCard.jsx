@@ -14,6 +14,7 @@ function RiskCard({ risk }) {
       <div className="eyebrow">
         CURRENT CONTEXTUAL RISK
         {risk.demo ? <ProvenanceChip source="Scenario data" kind="sensor" status="SIMULATED" /> : <ProvenanceChip source="Open-Meteo + OpenTopography" kind="external" />}
+        {risk.assessment_status === "PARTIAL_DATA" && <ProvenanceChip source="Incomplete inputs" kind="external" status="PARTIAL DATA" />}
         {hasSensorAdjustment && <ProvenanceChip source="Ground Node" kind="sensor" />}
       </div>
 
@@ -34,12 +35,12 @@ function RiskCard({ risk }) {
       </div>
 
       <p className="risk-note">
-        Explainable decision-support indicator.
-        Not a landslide prediction.
+        {risk.assessment_status === "PARTIAL_DATA" ? "Partial-input decision-support index; unavailable rainfall is excluded and remaining weights are normalized." : "Explainable decision-support indicator."}
+        {" "}Not a landslide prediction.
       </p>
       <details className="score-explainer">
         <summary>Explain this score</summary>
-        <p>Score = rainfall × 40% + slope × 25% + soil saturation × 20% + nearby history × 15%, after each signal is normalized from 0–1. A verified ground-node anomaly is then added and the result is capped at 100.</p>
+        <p>Available signals are normalized from 0–1 and combined using the configured weights. If rainfall is unavailable, its 40% weight is excluded and the remaining weights are normalized to 100%; missing rainfall is never treated as zero rainfall. A verified ground-node adjustment is then added and the result is capped at 100.</p>
       </details>
     </section>
   );
